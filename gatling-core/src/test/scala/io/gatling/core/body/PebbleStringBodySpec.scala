@@ -16,12 +16,21 @@
 
 package io.gatling.core.body
 
+import java.util.UUID
+
 import io.gatling.{ BaseSpec, ValidationValues }
 import io.gatling.core.EmptySession
 import io.gatling.core.config.GatlingConfiguration
 
 class PebbleStringBodySpec extends BaseSpec with ValidationValues with EmptySession {
   private implicit val configuration: GatlingConfiguration = GatlingConfiguration.loadForTest()
+
+  def exceptionToFail(method: => Any): Unit =
+    try {
+      method
+    } catch {
+      case e: Exception => fail(e.getMessage)
+    }
 
   "Static String" should "return itself" in {
     val session = emptySession
@@ -74,7 +83,8 @@ class PebbleStringBodySpec extends BaseSpec with ValidationValues with EmptySess
       }""",
       configuration.core.charset
     )
-    body(session).succeeded shouldBe """{
+    body(session).succeeded shouldBe
+      """{
         "foo": FOO,
         "bar": 1
       }"""
@@ -145,4 +155,69 @@ class PebbleStringBodySpec extends BaseSpec with ValidationValues with EmptySess
     val body = PebbleStringBody("{{ bar | capitalize }}{% filter upper %}hello{% endfilter %}", configuration.core.charset)
     body(session).succeeded shouldBe "BarHELLO"
   }
+
+  "currentTimeMillis" should "generate a long" in {
+    val body = PebbleStringBody("""{{currentTimeMillis()}}""", configuration.core.charset)
+    exceptionToFail(body(emptySession).succeeded.toLong)
+  }
+
+  "currentDate" should "generate a String" in {
+    val body = PebbleStringBody("""{{currentDate(format="yyyy-MM-dd HH:mm:ss")}}""", configuration.core.charset)
+    body(emptySession).succeeded.length shouldBe 19
+  }
+
+  "randomUuid" should "generate uuid" in {
+    val body = PebbleStringBody("""{{randomUuid()}}""", configuration.core.charset)
+    exceptionToFail(UUID.fromString(body(emptySession).succeeded))
+  }
+
+  "randomSecureUuid" should "generate uuid" in {
+    val body = PebbleStringBody("""{{randomSecureUuid()}}""", configuration.core.charset)
+    exceptionToFail(UUID.fromString(body(emptySession).succeeded))
+  }
+
+  "randomInt" should "generate random Int full range" in {
+    val randomInt = PebbleStringBody("""{{randomInt()}}""", configuration.core.charset)
+    randomInt(emptySession).succeeded.toInt should (be >= Int.MinValue and be <= Int.MaxValue)
+  }
+
+  "randomInt" should "generate random Int with range (inclusive)" in {
+    val randomInt = PebbleStringBody("""{{randomInt(0,10)}}""", configuration.core.charset)
+    val actual = Set.fill(1000)(randomInt(emptySession).succeeded.toInt)
+    val expected = (0 to 10).toSet
+    actual should contain theSameElementsAs expected
+  }
+
+  "randomInt" should "generate random Int with negative numbers" in {
+    val randomInt = PebbleStringBody("""{{randomInt(-10,-5)}}""", configuration.core.charset)
+    randomInt(emptySession).succeeded.toInt should (be < 0)
+  }
+
+  "randomInt" should "throw exception with 'max' less than 'min'" in {
+    val randomInt = PebbleStringBody("""{{randomInt(20,1)}}""", configuration.core.charset)
+    randomInt(emptySession).failed shouldBe "Range 'max'(1) must be above than 'min'(20) ({{randomInt(20,1)}}:1)"
+  }
+
+  "randomLong" should "generate random Long full range" in {
+    val randomLong = PebbleStringBody("""{{randomLong()}}""", configuration.core.charset)
+    randomLong(emptySession).succeeded.toLong should (be >= Long.MinValue and be <= Long.MaxValue)
+  }
+
+  "randomLong" should "generate random Long with range (inclusive)" in {
+    val randomLong = PebbleStringBody("""{{randomLong(2147483648,2147483658)}}""", configuration.core.charset)
+    val actual = Set.fill(1000)(randomLong(emptySession).succeeded.toLong)
+    val expected = (Int.MaxValue + 1L to Int.MaxValue + 11L).toSet
+    actual should contain theSameElementsAs expected
+  }
+
+  "randomLong" should "generate random Long with negative numbers" in {
+    val randomLong = PebbleStringBody("""{{randomLong(-2147483658,-2147483648)}}""", configuration.core.charset)
+    randomLong(emptySession).succeeded.toLong should (be < -2147483647L)
+  }
+
+  "randomLong" should "throw exception with 'max' less than 'min'" in {
+    val randomLong = PebbleStringBody("""{{randomLong(2147483658,2147483648)}}""", configuration.core.charset)
+    randomLong(emptySession).failed shouldBe "Range 'max'(2147483648) must be above than 'min'(2147483658) ({{randomLong(2147483658,2147483648)}}:1)"
+  }
+
 }

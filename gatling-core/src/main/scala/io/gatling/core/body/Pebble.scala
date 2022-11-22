@@ -24,6 +24,7 @@ import scala.jdk.CollectionConverters._
 import scala.util.control.NonFatal
 
 import io.gatling.commons.validation._
+import io.gatling.core.pebble.PebbleELFunction
 import io.gatling.core.session.{ Session, SessionPrivateAttributes }
 import io.gatling.core.util.{ ClasspathFileResource, ClasspathPackagedResource, FilesystemResource, Resource }
 
@@ -36,6 +37,7 @@ import io.pebbletemplates.pebble.template.PebbleTemplate
 
 private[gatling] object PebbleExtensions {
   private[body] var extensions: Seq[Extension] = Nil
+  private[body] val ELFunctions: Extension = new PebbleELFunction()
 
   def register(extensions: Seq[Extension]): Unit = {
     if (this.extensions.nonEmpty) {
@@ -46,8 +48,9 @@ private[gatling] object PebbleExtensions {
 }
 
 private[gatling] object Pebble extends StrictLogging {
-  private val StringEngine = new PebbleEngine.Builder().autoEscaping(false).extension(PebbleExtensions.extensions: _*).loader(new StringLoader).build
-  private val DelegatingEngine = new PebbleEngine.Builder().autoEscaping(false).extension(PebbleExtensions.extensions: _*).build
+  private val StringEngine =
+    new PebbleEngine.Builder().autoEscaping(false).extension(PebbleExtensions.extensions :+ PebbleExtensions.ELFunctions: _*).loader(new StringLoader).build
+  private val DelegatingEngine = new PebbleEngine.Builder().autoEscaping(false).extension(PebbleExtensions.extensions :+ PebbleExtensions.ELFunctions: _*).build
 
   private def mutableSeqToJava(c: mutable.Seq[_]): ju.List[AnyRef] =
     c.map(anyRefToJava).asJava

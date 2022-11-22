@@ -741,8 +741,8 @@ class ElSpec extends BaseSpec with ValidationValues with EmptySession {
   }
 
   "randomLongRange" should "generate random Long with negative numbers" in {
-    val randomInt = "#{randomLong(-2147483658,-2147483648)}".el[Long]
-    randomInt(emptySession).succeeded should (be < -2147483647L)
+    val randomLong = "#{randomLong(-2147483658,-2147483648)}".el[Long]
+    randomLong(emptySession).succeeded should (be < -2147483647L)
   }
 
   "randomLongRange" should "throw exception with 'max' less than 'min'" in {
