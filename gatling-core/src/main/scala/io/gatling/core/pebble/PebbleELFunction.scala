@@ -16,10 +16,11 @@
 
 package io.gatling.core.pebble
 
-import com.mitchellbosecke.pebble.extension.{AbstractExtension, Function}
-
 import java.util
+
 import scala.jdk.CollectionConverters._
+
+import io.pebbletemplates.pebble.extension.{ AbstractExtension, Function }
 
 class PebbleELFunction extends AbstractExtension {
 

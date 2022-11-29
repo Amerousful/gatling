@@ -16,12 +16,12 @@
 
 package io.gatling.core.pebble
 
-import com.mitchellbosecke.pebble.extension.Function
-import com.mitchellbosecke.pebble.template.{EvaluationContext, PebbleTemplate}
-
 import java.util
 import java.util.UUID
 import java.util.concurrent.ThreadLocalRandom
+
+import io.pebbletemplates.pebble.extension.Function
+import io.pebbletemplates.pebble.template.{ EvaluationContext, PebbleTemplate }
 
 class RandomUUID extends Function {
   override def getArgumentNames = null

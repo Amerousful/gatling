@@ -22,9 +22,9 @@ import java.util.concurrent.ThreadLocalRandom
 import scala.collection.mutable.ArrayBuffer
 import scala.jdk.CollectionConverters._
 
-import com.mitchellbosecke.pebble.error.PebbleException
-import com.mitchellbosecke.pebble.extension.Function
-import com.mitchellbosecke.pebble.template.{ EvaluationContext, PebbleTemplate }
+import io.pebbletemplates.pebble.error.PebbleException
+import io.pebbletemplates.pebble.extension.Function
+import io.pebbletemplates.pebble.template.{ EvaluationContext, PebbleTemplate }
 
 class RandomLong extends Function {
 

@@ -18,8 +18,8 @@ package io.gatling.core.pebble
 
 import java.util.{ Map, UUID }
 
-import com.mitchellbosecke.pebble.extension.Function
-import com.mitchellbosecke.pebble.template.{ EvaluationContext, PebbleTemplate }
+import io.pebbletemplates.pebble.extension.Function
+import io.pebbletemplates.pebble.template.{ EvaluationContext, PebbleTemplate }
 
 class RandomSecureUUID extends Function {
   override def getArgumentNames = null
